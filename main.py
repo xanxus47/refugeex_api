@@ -5,26 +5,24 @@ from database import get_pool, close_pool
 from routers import evacuee
 import logging
 
-# Setup basic logging to see errors in Railway "View Logs"
+# Setup logging to see connection status in Railway Logs
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     try:
-        logger.info("Connecting to Supabase...")
-        await get_pool()   # warm up connection pool on startup
-        logger.info("Database connection successful! 🚀")
+        logger.info("Connecting to Supabase via Pooler...")
+        await get_pool()
+        logger.info("Database connection successful! 🏠")
     except Exception as e:
-        logger.error(f"Database connection failed on startup: {e}")
-        # We don't 'raise' the error here so the server can still start
+        logger.error(f"Database connection failed: {e}")
     yield
-    await close_pool() # clean up on shutdown
-
+    await close_pool()
 
 app = FastAPI(
     title="Refugeex API",
-    description="Evacuee management API for MDRRMO Magsaysay — powered by Supabase",
+    description="Evacuee management API for MDRRMO Magsaysay",
     version="1.0.0",
     lifespan=lifespan,
 )
@@ -37,14 +35,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# FIXED: Removed the "/api/v1" prefix
+# Prefix removed as requested!
 app.include_router(evacuee.router) 
-
 
 @app.get("/")
 def root():
     return {"message": "Refugeex API is running 🏠", "docs": "/docs"}
-
 
 @app.get("/health")
 def health():
