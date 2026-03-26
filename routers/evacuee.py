@@ -189,39 +189,6 @@ async def get_summary():
 
 
 # ─────────────────────────────────────────
-# GET /evacuee/summary/barangay — per barangay stats
-# ─────────────────────────────────────────
-@router.get("/summary/barangay")
-async def get_summary_by_barangay():
-    pool = await get_pool()
-    async with pool.acquire() as conn:
-        rows_data = await conn.fetch("""
-            SELECT
-                barangay,
-                COUNT(*) FILTER (WHERE is_checked_in = true)  AS checked_in,
-                COUNT(*) FILTER (WHERE is_checked_in = false) AS checked_out,
-                COUNT(*)                                        AS total_all_time,
-                COUNT(*) FILTER (WHERE is_checked_in = true AND sex = 'Male')   AS male,
-                COUNT(*) FILTER (WHERE is_checked_in = true AND sex = 'Female') AS female,
-                COUNT(*) FILTER (WHERE is_checked_in = true AND is_pwd = true)         AS pwd,
-                COUNT(*) FILTER (WHERE is_checked_in = true AND is_pregnant = true)    AS pregnant,
-                COUNT(*) FILTER (WHERE is_checked_in = true AND is_lactating = true)   AS lactating,
-                COUNT(*) FILTER (WHERE is_checked_in = true AND is_solo_parent = true) AS solo_parent,
-                COUNT(*) FILTER (WHERE is_checked_in = true AND is_ip = true)          AS ip,
-                COUNT(*) FILTER (WHERE is_checked_in = true AND is_lgbt = true)        AS lgbt,
-                COUNT(*) FILTER (WHERE is_checked_in = true AND (is_4p = true OR is_4ps = true)) AS is_4p
-            FROM evacuee_details
-            GROUP BY barangay
-            ORDER BY checked_in DESC
-        """)
-
-    return {
-        "total_barangays": len(rows_data),
-        "data": [dict(r) for r in rows_data],
-    }
-
-
-# ─────────────────────────────────────────
 # GET /evacuee/barangay/{barangay_name} — filter by barangay
 # ─────────────────────────────────────────
 @router.get("/barangay/{barangay_name}", response_model=dict)
