@@ -40,7 +40,7 @@ app.include_router(evacuee.router)
 
 @app.get("/")
 def root():
-    return {"message": "Refugeex API is running 🏠", "docs": "/docs"}
+    return {"message": "Refugeex API is running, Goodluck to all and take care always. Godspeed -Argie 😎"}
 
 @app.get("/health")
 def health():
