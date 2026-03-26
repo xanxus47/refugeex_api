@@ -20,12 +20,13 @@ async def get_pool() -> asyncpg.Pool:
             
         _pool = await asyncpg.create_pool(
             dsn=database_url,
-            min_size=5,    # Keep 5 connections ready at all times
-            max_size=50,   # Allow up to 50 simultaneous database tasks
+            min_size=1,    # Keep 5 connections ready at all times
+            max_size=15,   # Allow up to 50 simultaneous database tasks
             ssl="require",
             # Add these to prevent "hanging" connections
-            command_timeout=60,
-            max_inactive_connection_lifetime=300 
+            command_timeout=15,
+            statement_cache_size=0,
+            max_inactive_connection_lifetime=300
         )
     return _pool
 
