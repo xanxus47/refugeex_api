@@ -2,10 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from database import get_pool, close_pool
-from routers import evacuee
+from routers.evacuees import router as evacuee_router
 import logging
 
-# Setup logging to see connection status in Railway Logs
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -35,8 +34,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Prefix removed as requested!
-app.include_router(evacuee.router) 
+app.include_router(evacuee_router)
 
 @app.get("/")
 def root():
