@@ -131,6 +131,49 @@ async def get_active_evacuees(
         "total": total,
         "data": [dict(r) for r in rows_data],
     }
+    
+    
+    # ─────────────────────────────────────────
+# GET /checked-out — only checked-out evacuees
+# ─────────────────────────────────────────
+@router.get("/checked-out", response_model=dict)
+async def get_checked_out_evacuees(
+    page: int = Query(1, ge=1),
+    rows: int = Query(20, ge=1, le=100),
+    barangay: Optional[str] = None,
+    search: Optional[str] = None,
+    sort_by: str = Query("check_out_time", enum=["check_out_time", "full_name", "barangay", "age"]),
+    sort_asc: bool = False,
+):
+    pool = await get_pool()
+
+    conditions = ["is_checked_in = false", "check_out_time IS NOT NULL"]
+    params = []
+    idx = 1
+
+    if barangay:
+        conditions.append(f"barangay = ${idx}"); params.append(barangay); idx += 1
+    if search:
+        conditions.append(f"(full_name ILIKE ${idx} OR profile_id ILIKE ${idx} OR barangay ILIKE ${idx})")
+        params.append(f"%{search}%"); idx += 1
+
+    where = f"WHERE {' AND '.join(conditions)}"
+    order = f"ORDER BY {sort_by} {'ASC' if sort_asc else 'DESC'}"
+    offset = (page - 1) * rows
+
+    async with pool.acquire() as conn:
+        total = await conn.fetchval(f"SELECT COUNT(*) FROM evacuee_details {where}", *params)
+        rows_data = await conn.fetch(
+            f"SELECT * FROM evacuee_details {where} {order} LIMIT {rows} OFFSET {offset}",
+            *params,
+        )
+
+    return {
+        "page": page,
+        "rows": rows,
+        "total": total,
+        "data": [dict(r) for r in rows_data],
+    }
 
 
 # ─────────────────────────────────────────
