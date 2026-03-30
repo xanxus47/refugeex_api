@@ -8,7 +8,7 @@ router = APIRouter()
 # ─────────────────────────────────────────
 # GET / — list all with filters
 # ─────────────────────────────────────────
-@router.get("", response_model=dict)
+@router.get("/", response_model=dict)
 async def get_evacuees(
     page: int = Query(1, ge=1),
     rows: int = Query(20, ge=1, le=100),
